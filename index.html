@@ -336,9 +336,25 @@
 
     async function submitData(type) {
         let params = { action: type === 'register' ? "register" : "updateProfile" };
+        
         if(type === 'register') {
             let mob = document.getElementById('regMobile').value.trim();
             if(mob.startsWith('1')) mob = '0' + mob;
+            
+            // মোবাইল নাম্বার চেক: ইতিমধ্যে আছে কি না
+            toggleLoader(true);
+            const existingDonors = await fetchData('getDonors');
+            const isExist = existingDonors.some(u => {
+                let clean = u.Mobile.toString().replace(/'/g, "");
+                if(clean.length === 10 && !clean.startsWith('0')) clean = '0' + clean;
+                return clean === mob;
+            });
+
+            if(isExist) {
+                toggleLoader(false);
+                return alert("এই মোবাইল নাম্বারটি দিয়ে ইতিপূর্বে নিবন্ধন করা হয়েছে।");
+            }
+
             params.name = document.getElementById('regName').value;
             params.mobile = "'" + mob;
             params.division = document.getElementById('regDiv').value;
@@ -348,14 +364,17 @@
             params.bloodGroup = document.getElementById('regGrp').value;
             params.lastDonation = document.getElementById('regDate').value;
             params.donationCount = document.getElementById('regCount').value;
-            if(!params.name || mob.length < 11) return alert("সঠিক তথ্য দিন");
+            if(!params.name || mob.length < 11) {
+                toggleLoader(false);
+                return alert("সঠিক তথ্য দিন");
+            }
         } else {
             params.mobile = "'" + localStorage.getItem('bloodUser');
             params.lastDonation = document.getElementById('updtDate').value;
             params.donationCount = document.getElementById('updtCount').value;
+            toggleLoader(true);
         }
 
-        toggleLoader(true);
         const qs = new URLSearchParams(params).toString();
         
         fetch(`${SCRIPT_URL}?${qs}`, { method: 'GET', mode: 'no-cors' })
@@ -363,7 +382,7 @@
             setTimeout(async () => {
                 if(type === 'register'){
                    toggleLoader(false);
-                   alert("আবেদন গ্রহণ করা হয়েছে। (যদি আপনি নতুন হয়ে থাকেন তবেই নিবন্ধিত হবেন)");
+                   alert("আবেদন গ্রহণ করা হয়েছে।");
                    showPage('home');
                 } else {
                    toggleLoader(false);

@@ -144,6 +144,15 @@
                     <li>একটি অসাধু চক্র রক্তদানে আসছি বলে আপনার কাছে টাকা চাইতে পারে, তাদের থেকে বিরত থাকবেন।</li>
                 </ol>
             </div>
+            
+            <div class="info-box etiquette">
+                <h4 style="margin:0 0 10px 0"><i class="fas fa-heart"></i> রক্তদাতার সাথে আচরণ ও উৎসাহ</h4>
+                <ol class="info-list">
+                    <li>রক্তদাতা নিজের সময় এবং রক্ত দিয়ে জীবন বাঁচাতে এগিয়ে আসেন, তাই তাদের সাথে সর্বদা বিনয়ী আচরণ করুন।</li>
+                    <li>রক্তদানের পর রক্তদাতাকে ধন্যবাদ জানান এবং সম্ভব হলে হালকা নাস্তা বা তরল খাবারের ব্যবস্থা করুন।</li>
+                    <li>রক্তদান কোনো দুর্বলতা নয়, বরং এটি একটি মানবিক দায়িত্ব। আপনার বন্ধু ও পরিবারকে রক্তদানে উৎসাহিত করুন।</li>
+                </ol>
+            </div>
         </div>
     </div>
 
@@ -247,10 +256,10 @@
 </nav>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzPorfWGFFIRApjs2Tyb_kYHBh6E-Q1-2zjRn2n_mSm32guhWg3ejoAqfQbIoP0pNFx/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0M_CTHic_U4EwLdy3G_H_4hR6-4TX-d9XdNHWMauot6DyUkc97IV4lesuWDqfafsGsQ/exec";
+    const API_KEY = "Rasel3893"; // নতুন API Key
     let allBanks = [];
 
-    // বাংলাদেশ জেলা ও বিভাগ ডাটা (সম্পূর্ণ ৬৪ জেলা)
     const bdData = {
         "Barishal": ["Barguna", "Barishal", "Bhola", "Jhalokathi", "Patuakhali", "Pirojpur"],
         "Chattogram": ["Bandarban", "Brahmanbaria", "Chandpur", "Chattogram", "Cumilla", "Cox's Bazar", "Feni", "Khagrachhari", "Lakshmipur", "Noakhali", "Rangamati"],
@@ -262,19 +271,23 @@
         "Sylhet": ["Habiganj", "Moulvibazar", "Sunamganj", "Sylhet"]
     };
 
+    // নিরাপত্তা নিশ্চিত করতে ইনপুট ক্লিন করার ফাংশন
+    function secure(str) {
+        if (!str) return "";
+        return str.toString().replace(/[<>{}()\[\]\\/]/g, "").trim();
+    }
+
     function initDropdowns() {
         const divSelect = document.getElementById('regDiv');
         const searchDist = document.getElementById('searchDist');
         const bankSearch = document.getElementById('bankSearch');
         const allDistricts = Object.values(bdData).flat().sort();
 
-        // বিভাগ ড্রপডাউন রিসেট ও লোড
         divSelect.innerHTML = '<option value="">Select Division</option>';
         Object.keys(bdData).sort().forEach(div => {
             divSelect.innerHTML += `<option value="${div}">${div}</option>`;
         });
 
-        // সার্চ ও ব্যাংক ড্রপডাউন রিসেট ও লোড
         searchDist.innerHTML = '<option value="">সকল জেলা</option>';
         bankSearch.innerHTML = '<option value="">সকল জেলা</option>';
         allDistricts.forEach(dist => {
@@ -308,7 +321,7 @@
 
     async function fetchData(action) {
         try {
-            const response = await fetch(`${SCRIPT_URL}?action=${action}`);
+            const response = await fetch(`${SCRIPT_URL}?key=${API_KEY}&action=${action}`);
             return await response.json();
         } catch (e) { return null; }
     }
@@ -324,9 +337,9 @@
 
     async function fetchDonors() {
         const grp = document.getElementById('searchGrp').value;
-        const dist = document.getElementById('searchDist').value.toLowerCase();
-        const upz = document.getElementById('searchUpz').value.trim().toLowerCase();
-        const uni = document.getElementById('searchUni').value.trim().toLowerCase();
+        const dist = secure(document.getElementById('searchDist').value).toLowerCase();
+        const upz = secure(document.getElementById('searchUpz').value).toLowerCase();
+        const uni = secure(document.getElementById('searchUni').value).toLowerCase();
         
         if(!grp) return alert("রক্তের গ্রুপ বেছে নিন।");
         toggleLoader(true);
@@ -390,16 +403,16 @@
     }
 
     function filterBanks() {
-        const term = document.getElementById('bankSearch').value.toLowerCase();
+        const term = secure(document.getElementById('bankSearch').value).toLowerCase();
         displayBanks(allBanks.filter(b => b.District.toLowerCase().includes(term)));
     }
 
     async function submitData(type) {
-        let params = { action: type === 'register' ? "register" : "updateProfile" };
+        let params = { key: API_KEY, action: type === 'register' ? "register" : "updateProfile" };
         
         if(type === 'register') {
-            let mob = document.getElementById('regMobile').value.trim();
-            if(mob.length < 11) return alert("সঠিক মোবাইল নাম্বার দিন।");
+            let mob = secure(document.getElementById('regMobile').value);
+            if(mob.length < 11 || isNaN(mob)) return alert("সঠিক মোবাইল নাম্বার দিন।");
             if(!mob.startsWith('0')) mob = '0' + mob;
             
             toggleLoader(true);
@@ -415,22 +428,22 @@
                 return alert("এই মোবাইল নাম্বারটি দিয়ে ইতিপূর্বে নিবন্ধন করা হয়েছে।");
             }
 
-            params.name = document.getElementById('regName').value;
-            params.mobile = "'" + mob;
-            params.division = document.getElementById('regDiv').value;
-            params.district = document.getElementById('regDist').value;
-            params.upazila = document.getElementById('regUpz').value;
-            params.union = document.getElementById('regUni').value;
-            params.bloodGroup = document.getElementById('regGrp').value;
+            params.name = secure(document.getElementById('regName').value);
+            params.mobile = mob;
+            params.division = secure(document.getElementById('regDiv').value);
+            params.district = secure(document.getElementById('regDist').value);
+            params.upazila = secure(document.getElementById('regUpz').value);
+            params.union = secure(document.getElementById('regUni').value);
+            params.bloodGroup = secure(document.getElementById('regGrp').value);
             params.lastDonation = document.getElementById('regDate').value;
             params.donationCount = document.getElementById('regCount').value;
 
             if(!params.name || !params.division || !params.district) {
                 toggleLoader(false);
-                return alert("নাম, বিভাগ এবং জেলা সঠিক ভাবে দিন।");
+                return alert("সঠিক তথ্য দিন। স্পেশাল ক্যারেক্টার ব্যবহার করবেন না।");
             }
         } else {
-            params.mobile = "'" + localStorage.getItem('bloodUser');
+            params.mobile = localStorage.getItem('bloodUser');
             params.lastDonation = document.getElementById('updtDate').value;
             params.donationCount = document.getElementById('updtCount').value;
             toggleLoader(true);
@@ -454,7 +467,7 @@
     }
 
     function userLogin() {
-        let mob = document.getElementById('loginMob').value.trim();
+        let mob = secure(document.getElementById('loginMob').value);
         if(mob.length < 11) return alert("সঠিক মোবাইল নাম্বার দিন");
         if(!mob.startsWith('0')) mob = '0' + mob;
         localStorage.setItem('bloodUser', mob);
@@ -473,7 +486,7 @@
         const data = await fetchData('getDonors');
         toggleLoader(false);
 
-        if(!data) return;
+        if(!data || data === "Unauthorized Access!") return;
 
         const user = data.find(u => {
             let clean = u.Mobile.toString().replace(/'/g, "");

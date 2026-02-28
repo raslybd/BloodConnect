@@ -43,6 +43,7 @@
             border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
             position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow);
         }
+        .header-controls { display: flex; align-items: center; gap: 15px; }
         .back-btn { font-size: 20px; cursor: pointer; display: none; }
         .container { padding: 20px; max-width: 500px; margin: auto; }
         
@@ -106,7 +107,12 @@
 <header>
     <i class="fas fa-chevron-left back-btn" id="backBtn" onclick="showPage('home')"></i>
     <div id="headerTitle" style="font-weight: 700; letter-spacing: 1px;">BLOOD CONNECT</div>
-    <i class="fas fa-moon theme-toggle" onclick="toggleDarkMode()" id="themeIcon"></i>
+    <div class="header-controls">
+        <a href="https://raslybd.github.io/BloodConnect/privacy.html" style="color: white; text-decoration: none;">
+            <i class="fas fa-user-shield"></i>
+        </a>
+        <i class="fas fa-moon theme-toggle" onclick="toggleDarkMode()" id="themeIcon"></i>
+    </div>
 </header>
 
 <div class="container">
@@ -257,7 +263,7 @@
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0M_CTHic_U4EwLdy3G_H_4hR6-4TX-d9XdNHWMauot6DyUkc97IV4lesuWDqfafsGsQ/exec";
-    const API_KEY = "Rasel3893"; // নতুন API Key
+    const API_KEY = "Rasel3893"; 
     let allBanks = [];
 
     const bdData = {
@@ -271,7 +277,6 @@
         "Sylhet": ["Habiganj", "Moulvibazar", "Sunamganj", "Sylhet"]
     };
 
-    // নিরাপত্তা নিশ্চিত করতে ইনপুট ক্লিন করার ফাংশন
     function secure(str) {
         if (!str) return "";
         return str.toString().replace(/[<>{}()\[\]\\/]/g, "").trim();
